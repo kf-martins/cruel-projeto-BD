@@ -1,0 +1,18 @@
+.claude
+PLAN.md
+
+# Variáveis de ambiente (segredos locais)
+.env
+frontend/.env
+
+# Build / dependências
+target/
+node_modules/
+dist/
+
+# IDEs / SO
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
