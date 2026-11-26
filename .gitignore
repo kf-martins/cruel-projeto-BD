@@ -1,9 +1,9 @@
-.claude
-PLAN.md
-
 # Variáveis de ambiente (segredos locais)
 .env
 frontend/.env
+
+# Outros
+*.pdf
 
 # Build / dependências
 target/
@@ -16,3 +16,4 @@ dist/
 *.iml
 .DS_Store
 Thumbs.db
+
