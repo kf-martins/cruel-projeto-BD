@@ -397,7 +397,9 @@ export default function AvaliacoesAdminPage() {
     <>
       <PageHeader
         titulo="Avaliações"
-        subtitulo="RF2, RF3 e RF4 — monte avaliações por oferta, escolha as questões e defina os alunos elegíveis."
+        subtitulo={isAdmin
+          ? 'RF2, RF3 e RF4 — monte avaliações por oferta, escolha as questões e defina os alunos elegíveis.'
+          : 'Avaliações das disciplinas que você ministra.'}
         acoes={isAdmin && !criando && (
           <button type="button" className="btn-primary" onClick={() => { setCriando(true); setTurma(null); }}>
             <Plus className="h-4 w-4" /> Nova avaliação

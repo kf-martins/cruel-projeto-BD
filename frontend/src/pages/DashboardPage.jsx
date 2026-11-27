@@ -17,7 +17,12 @@ function Indicador({ icone: Icone, rotulo, valor, detalhe }) {
   );
 }
 
+/**
+ * Painel de ADMIN e DOCENTE. Os dados já chegam filtrados pelo back-end: o docente recebe
+ * apenas as avaliações, questões e adesão das ofertas que ministra.
+ */
 function PainelGestao() {
+  const { isAdmin } = useAuth();
   const [dados, setDados] = useState(null);
   const [erro, setErro] = useState('');
 
@@ -39,13 +44,13 @@ function PainelGestao() {
     <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Indicador icone={ClipboardList} rotulo="Avaliações abertas" valor={abertas.length} detalhe={`${dados.avaliacoes.length} cadastradas`} />
-        <Indicador icone={FileQuestion} rotulo="Questões ativas" valor={dados.questoes.filter((q) => q.ativa).length} detalhe={`${dados.questoes.length} no banco`} />
+        <Indicador icone={FileQuestion} rotulo="Questões ativas" valor={dados.questoes.filter((q) => q.ativa).length} detalhe={isAdmin ? `${dados.questoes.length} no banco` : `${dados.questoes.length} nas suas avaliações`} />
         <Indicador icone={ClipboardCheck} rotulo="Submissões anônimas" valor={respondentes} detalhe={`de ${matriculados} alunos elegíveis`} />
         <Indicador icone={Users} rotulo="Adesão geral" valor={`${formatarNumero(taxa, 1)}%`} detalhe="respondentes / matriculados" />
       </div>
       <Card
         className="mt-6"
-        titulo="Avaliações em andamento"
+        titulo={isAdmin ? 'Avaliações em andamento' : 'Suas avaliações'}
         acoes={
           <Link to="/relatorios" className="btn-outline">
             <BarChart3 className="h-4 w-4" /> Ver relatórios
@@ -109,12 +114,17 @@ function PainelAluno() {
 }
 
 export default function DashboardPage() {
-  const { usuario, isGestao } = useAuth();
+  const { usuario, isGestao, isAdmin } = useAuth();
+  const subtitulo = isAdmin
+    ? 'Panorama das avaliações de disciplinas e docentes.'
+    : isGestao
+      ? 'Panorama das avaliações das disciplinas que você ministra.'
+      : 'Sua opinião é anônima e ajuda a melhorar o curso.';
   return (
     <>
       <PageHeader
         titulo={`Olá, ${usuario.nome.split(' ').slice(0, usuario.perfil === 'ALUNO' ? 1 : 3).join(' ')}`}
-        subtitulo={isGestao ? 'Panorama das avaliações de disciplinas e docentes.' : 'Sua opinião é anônima e ajuda a melhorar o curso.'}
+        subtitulo={subtitulo}
       />
       {isGestao ? <PainelGestao /> : <PainelAluno />}
     </>

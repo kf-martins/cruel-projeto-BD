@@ -5,6 +5,7 @@ import {
 import {
   ArrowDownRight, ArrowUpRight, BarChart3, Database, MessageSquareQuote, Minus, TrendingDown, TrendingUp,
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { api } from '../services/api';
 import {
@@ -354,10 +355,13 @@ const NIVEL = {
 };
 
 function Relatorio4({ filtro }) {
+  const { isAdmin } = useAuth();
   const { paleta, eixo, cursor } = useEstiloGrafico();
   const adesao = useRelatorio(() => api.relatorio.adesao(filtro), [filtro]);
-  const pendentes = useRelatorio(() => api.relatorio.pendentes(filtro), [filtro]);
-  const naoUsadas = useRelatorio(() => api.relatorio.questoesNaoUtilizadas(), []);
+  // A lista nominal de pendentes é exclusiva do ADMIN: o docente vê apenas o total (anonimato).
+  const pendentes = useRelatorio(() => (isAdmin ? api.relatorio.pendentes(filtro) : Promise.resolve([])), [filtro, isAdmin]);
+  // O banco de questões completo é visão exclusiva do ADMIN (o back-end responde 403 ao docente).
+  const naoUsadas = useRelatorio(() => (isAdmin ? api.relatorio.questoesNaoUtilizadas() : Promise.resolve([])), [isAdmin]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -410,7 +414,7 @@ function Relatorio4({ filtro }) {
         }}
       </Estado>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      {isAdmin && <div className="grid gap-6 lg:grid-cols-2">
         <Card titulo="Alunos pendentes" descricao="Matriculados sem registro em participacao_avaliacao (anti-join)">
           <Estado estado={pendentes}>
             {(linhas) => (
@@ -445,7 +449,7 @@ function Relatorio4({ filtro }) {
             )}
           </Estado>
         </Card>
-      </div>
+      </div>}
     </div>
   );
 }
@@ -510,6 +514,7 @@ const RECURSOS = {
 
 export default function RelatoriosPage() {
   const { paleta } = useTheme();
+  const { isAdmin } = useAuth();
   const [aba, setAba] = useState('r1');
   const [filtroForm, setFiltroForm] = useState({ ano: '', semestre: '', idDisciplina: '' });
   const [base, setBase] = useState({ disciplinas: [], ofertas: [], avaliacoes: [] });
@@ -533,7 +538,12 @@ export default function RelatoriosPage() {
 
   return (
     <>
-      <PageHeader titulo="Relatórios" subtitulo="RF7 — consultas analíticas de database/relatorios.sql, com tabela e gráfico." />
+      <PageHeader
+        titulo="Relatórios"
+        subtitulo={isAdmin
+          ? 'RF7 — consultas analíticas de database/relatorios.sql, com tabela e gráfico.'
+          : 'RF7 — resultados das avaliações das disciplinas que você ministra.'}
+      />
 
       <div className="mb-4 grid gap-2 sm:grid-cols-3">
         <select className="input" value={filtroForm.ano} onChange={(e) => setFiltroForm({ ...filtroForm, ano: e.target.value })} aria-label="Ano">

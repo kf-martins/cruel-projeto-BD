@@ -149,7 +149,9 @@ export default function QuestoesPage() {
     <>
       <PageHeader
         titulo="Banco de questões"
-        subtitulo="RF1 — questões de múltipla escolha, escala 1–5 e texto livre."
+        subtitulo={isAdmin
+          ? 'RF1 — questões de múltipla escolha, escala 1–5 e texto livre.'
+          : 'Questões utilizadas nas avaliações das disciplinas que você ministra.'}
         acoes={isAdmin && !mostrarForm && (
           <button type="button" className="btn-primary" onClick={() => setMostrarForm(true)}>
             <Plus className="h-4 w-4" /> Nova questão
