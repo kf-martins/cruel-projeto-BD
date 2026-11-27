@@ -80,6 +80,24 @@ public class QuestaoDAO {
                 .toList();
     }
 
+    /** Questões usadas nas avaliações das ofertas do docente (com alternativas). */
+    public List<Questao> listarDoDocenteComAlternativas(Long idDocente) {
+        List<Questao> questoes = jdbcTemplate.query("""
+                SELECT DISTINCT q.id_questao, q.enunciado, q.tipo, q.categoria, q.ativa
+                FROM questao q
+                JOIN avaliacao_questao aq ON aq.id_questao  = q.id_questao
+                JOIN avaliacao a          ON a.id_avaliacao = aq.id_avaliacao
+                JOIN oferta_disciplina o  ON o.id_oferta    = a.id_oferta
+                WHERE o.id_docente = ?
+                ORDER BY q.id_questao
+                """, QUESTAO_MAPPER, idDocente);
+        Map<Long, List<Alternativa>> alternativas = listarAlternativas(
+                questoes.stream().map(Questao::idQuestao).toList());
+        return questoes.stream()
+                .map(q -> q.comAlternativas(alternativas.getOrDefault(q.idQuestao(), List.of())))
+                .toList();
+    }
+
     public Optional<Questao> buscarPorId(Long idQuestao) {
         return jdbcTemplate.query(
                         "SELECT id_questao, enunciado, tipo, categoria, ativa FROM questao WHERE id_questao = ?",

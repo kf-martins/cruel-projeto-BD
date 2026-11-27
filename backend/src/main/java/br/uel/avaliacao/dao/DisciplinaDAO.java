@@ -63,8 +63,24 @@ public class DisciplinaDAO {
                 DISCIPLINA_MAPPER);
     }
 
+    /** Disciplinas em que o docente tem (ou teve) alguma oferta. */
+    public List<Disciplina> listarDisciplinasDoDocente(Long idDocente) {
+        return jdbcTemplate.query("""
+                SELECT d.id_disciplina, d.codigo, d.nome, d.carga_horaria
+                FROM disciplina d
+                WHERE EXISTS (SELECT 1 FROM oferta_disciplina o
+                              WHERE o.id_disciplina = d.id_disciplina AND o.id_docente = ?)
+                ORDER BY d.codigo
+                """, DISCIPLINA_MAPPER, idDocente);
+    }
+
     public List<OfertaDisciplina> listarOfertas() {
         return jdbcTemplate.query(SELECT_OFERTA + " ORDER BY o.ano DESC, o.semestre DESC, d.nome", OFERTA_MAPPER);
+    }
+
+    public List<OfertaDisciplina> listarOfertasDoDocente(Long idDocente) {
+        return jdbcTemplate.query(SELECT_OFERTA + " WHERE o.id_docente = ? ORDER BY o.ano DESC, o.semestre DESC, d.nome",
+                OFERTA_MAPPER, idDocente);
     }
 
     public Optional<OfertaDisciplina> buscarOfertaPorId(Long idOferta) {

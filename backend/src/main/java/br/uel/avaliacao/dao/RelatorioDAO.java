@@ -22,11 +22,15 @@ import br.uel.avaliacao.dto.RelatorioDTOs.RankingQuestao;
 @Repository
 public class RelatorioDAO {
 
-    /** Filtros dinâmicos por período e disciplina aplicados sobre {@code oferta_disciplina o}. */
+    /**
+     * Filtros dinâmicos por período, disciplina e docente aplicados sobre {@code oferta_disciplina o}.
+     * O filtro de docente garante que um DOCENTE nunca receba linhas de ofertas de outros docentes.
+     */
     private static final String FILTRO_OFERTA = """
               AND (CAST(:ano AS INTEGER) IS NULL OR o.ano = :ano)
               AND (CAST(:semestre AS INTEGER) IS NULL OR o.semestre = :semestre)
               AND (CAST(:idDisciplina AS INTEGER) IS NULL OR o.id_disciplina = :idDisciplina)
+              AND (CAST(:idDocente AS INTEGER) IS NULL OR o.id_docente = :idDocente)
             """;
 
     private final NamedParameterJdbcTemplate jdbc;
@@ -215,6 +219,7 @@ public class RelatorioDAO {
         return new MapSqlParameterSource()
                 .addValue("ano", f.ano(), Types.INTEGER)
                 .addValue("semestre", f.semestre(), Types.INTEGER)
-                .addValue("idDisciplina", f.idDisciplina(), Types.INTEGER);
+                .addValue("idDisciplina", f.idDisciplina(), Types.INTEGER)
+                .addValue("idDocente", f.idDocente(), Types.INTEGER);
     }
 }

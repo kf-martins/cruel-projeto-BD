@@ -64,8 +64,11 @@ public class AvaliacaoService {
 
     // ------------------------------------------------------------------ RF1 — questões
 
-    public List<Questao> listarQuestoes() {
-        return questaoDAO.listarTodasComAlternativas();
+    /** ADMIN vê o banco inteiro; DOCENTE vê apenas as questões usadas nas avaliações das suas ofertas. */
+    public List<Questao> listarQuestoes(Usuario usuario) {
+        return usuario.isDocente()
+                ? questaoDAO.listarDoDocenteComAlternativas(usuario.idUsuario())
+                : questaoDAO.listarTodasComAlternativas();
     }
 
     /** RF1 — grava a questão e (se múltipla escolha) suas alternativas na mesma transação. */
@@ -155,9 +158,13 @@ public class AvaliacaoService {
 
     // ------------------------------------------------------------------ RF2 / RF3 — avaliações
 
-    public List<Avaliacao> listarAvaliacoes() {
+    /** ADMIN vê todas as avaliações; DOCENTE vê apenas as das ofertas que ministra. */
+    public List<Avaliacao> listarAvaliacoes(Usuario usuario) {
         LocalDateTime agora = LocalDateTime.now(clock);
-        return avaliacaoDAO.listarTodas().stream().map(a -> a.comSituacao(agora)).toList();
+        List<Avaliacao> lista = usuario.isDocente()
+                ? avaliacaoDAO.listarDoDocente(usuario.idUsuario())
+                : avaliacaoDAO.listarTodas();
+        return lista.stream().map(a -> a.comSituacao(agora)).toList();
     }
 
     public List<Avaliacao> listarAvaliacoesDoAluno(Usuario aluno) {
@@ -165,7 +172,10 @@ public class AvaliacaoService {
         return avaliacaoDAO.listarDoAluno(aluno.idUsuario()).stream().map(a -> a.comSituacao(agora)).toList();
     }
 
-    /** Questionário completo. Alunos só acessam avaliações ativas das ofertas em que estão matriculados. */
+    /**
+     * Questionário completo. Alunos só acessam avaliações ativas das ofertas em que estão matriculados;
+     * docentes, apenas as avaliações das ofertas que ministram.
+     */
     public Avaliacao buscarAvaliacao(Long idAvaliacao, Usuario usuario) {
         Avaliacao avaliacao = avaliacaoDAO.buscarCompletaPorId(idAvaliacao)
                 .orElseThrow(() -> RegraNegocioException.naoEncontrado("Avaliação não encontrada."));
@@ -173,6 +183,8 @@ public class AvaliacaoService {
             if (!avaliacao.ativa() || !avaliacaoDAO.alunoMatriculado(idAvaliacao, usuario.idUsuario())) {
                 throw new RegraNegocioException(HttpStatus.FORBIDDEN, "Você não está matriculado na oferta desta avaliação.");
             }
+        } else if (usuario.isDocente() && !avaliacaoDAO.pertenceAoDocente(idAvaliacao, usuario.idUsuario())) {
+            throw new RegraNegocioException(HttpStatus.FORBIDDEN, "Esta avaliação não pertence às suas ofertas.");
         }
         return avaliacao.comSituacao(LocalDateTime.now(clock));
     }

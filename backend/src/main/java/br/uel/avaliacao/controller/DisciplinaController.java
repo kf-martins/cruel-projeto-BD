@@ -7,12 +7,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.uel.avaliacao.config.AuthInterceptor;
 import br.uel.avaliacao.dto.CadastroDTOs.MatriculaRequest;
 import br.uel.avaliacao.dto.CadastroDTOs.NovaOfertaRequest;
 import br.uel.avaliacao.model.Disciplina;
@@ -36,13 +38,13 @@ public class DisciplinaController {
     }
 
     @GetMapping("/disciplinas")
-    public List<Disciplina> disciplinas() {
-        return catalogoService.listarDisciplinas();
+    public List<Disciplina> disciplinas(@RequestAttribute(AuthInterceptor.ATRIBUTO_USUARIO) Usuario usuario) {
+        return catalogoService.listarDisciplinas(usuario);
     }
 
     @GetMapping("/ofertas")
-    public List<OfertaDisciplina> ofertas() {
-        return catalogoService.listarOfertas();
+    public List<OfertaDisciplina> ofertas(@RequestAttribute(AuthInterceptor.ATRIBUTO_USUARIO) Usuario usuario) {
+        return catalogoService.listarOfertas(usuario);
     }
 
     @PostMapping("/ofertas")

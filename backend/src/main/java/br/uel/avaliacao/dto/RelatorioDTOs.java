@@ -11,9 +11,11 @@ public final class RelatorioDTOs {
 
     /**
      * Filtros opcionais aceitos por todos os relatórios ({@code null} = sem filtro).
+     * {@code idDocente} restringe às ofertas de um docente (preenchido automaticamente quando o
+     * usuário logado é DOCENTE; {@code null} para o ADMIN).
      * {@code hoje} é a data de referência (relógio da aplicação) para calcular a situação das avaliações.
      */
-    public record Filtro(Integer ano, Integer semestre, Long idDisciplina, LocalDate hoje) {
+    public record Filtro(Integer ano, Integer semestre, Long idDisciplina, Long idDocente, LocalDate hoje) {
     }
 
     /** Relatório 1 — média geral e distribuição das notas por oferta. */

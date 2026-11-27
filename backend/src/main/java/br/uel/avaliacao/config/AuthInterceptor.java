@@ -22,7 +22,12 @@ import jakarta.servlet.http.HttpServletResponse;
  * <ul>
  *   <li>{@code POST /api/respostas} e {@code GET /api/avaliacoes/minhas}: somente ALUNO;</li>
  *   <li>{@code GET /api/avaliacoes/{id}}: qualquer perfil (o service verifica a matrícula do aluno);</li>
- *   <li>{@code /api/relatorios/**} e demais leituras: ADMIN ou DOCENTE;</li>
+ *   <li>{@code GET /api/usuarios} e {@code GET /api/ofertas/{id}/alunos}: somente ADMIN (dados de
+ *       alunos e de outros docentes só interessam à gestão das turmas);</li>
+ *   <li>{@code GET /api/relatorios/pendentes} (lista nominal) e {@code /questoes-nao-utilizadas}:
+ *       o service recusa o DOCENTE — ele só vê o total de pendentes, para preservar o anonimato;</li>
+ *   <li>{@code /api/relatorios/**} e demais leituras: ADMIN ou DOCENTE — para o DOCENTE, os services
+ *       restringem o resultado às ofertas que ele ministra;</li>
  *   <li>qualquer escrita (POST/PUT/PATCH/DELETE): somente ADMIN.</li>
  * </ul>
  */
@@ -53,6 +58,9 @@ public class AuthInterceptor implements HandlerInterceptor {
             exigir(usuario, Set.of(Usuario.ALUNO));
         } else if ("GET".equals(metodo) && path.matches("/api/avaliacoes/\\d+")) {
             return true;
+        } else if ("GET".equals(metodo)
+                && (path.startsWith("/api/usuarios") || path.matches("/api/ofertas/\\d+/alunos"))) {
+            exigir(usuario, Set.of(Usuario.ADMIN));
         } else if ("GET".equals(metodo)) {
             exigir(usuario, GESTAO);
         } else {

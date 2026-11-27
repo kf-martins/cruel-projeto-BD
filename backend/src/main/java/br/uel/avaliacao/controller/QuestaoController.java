@@ -7,14 +7,17 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.uel.avaliacao.config.AuthInterceptor;
 import br.uel.avaliacao.dto.CadastroDTOs.NovaQuestaoRequest;
 import br.uel.avaliacao.dto.CadastroDTOs.StatusRequest;
 import br.uel.avaliacao.model.Questao;
+import br.uel.avaliacao.model.Usuario;
 import br.uel.avaliacao.service.AvaliacaoService;
 import jakarta.validation.Valid;
 
@@ -30,8 +33,8 @@ public class QuestaoController {
     }
 
     @GetMapping
-    public List<Questao> listar() {
-        return avaliacaoService.listarQuestoes();
+    public List<Questao> listar(@RequestAttribute(AuthInterceptor.ATRIBUTO_USUARIO) Usuario usuario) {
+        return avaliacaoService.listarQuestoes(usuario);
     }
 
     @PostMapping

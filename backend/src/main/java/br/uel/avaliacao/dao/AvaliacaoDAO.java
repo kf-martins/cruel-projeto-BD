@@ -87,6 +87,23 @@ public class AvaliacaoDAO {
         return jdbcTemplate.query(sql, (rs, i) -> mapear(rs));
     }
 
+    /** Avaliações das ofertas ministradas pelo docente informado. */
+    public List<Avaliacao> listarDoDocente(Long idDocente) {
+        String sql = SELECT_BASE + ", NULL::boolean AS respondida " + FROM_BASE
+                + " WHERE o.id_docente = ? ORDER BY o.ano DESC, o.semestre DESC, d.nome";
+        return jdbcTemplate.query(sql, (rs, i) -> mapear(rs), idDocente);
+    }
+
+    /** A avaliação pertence a uma oferta ministrada pelo docente? */
+    public boolean pertenceAoDocente(Long idAvaliacao, Long idDocente) {
+        Integer total = jdbcTemplate.queryForObject("""
+                SELECT count(*) FROM avaliacao a
+                JOIN oferta_disciplina o ON o.id_oferta = a.id_oferta
+                WHERE a.id_avaliacao = ? AND o.id_docente = ?
+                """, Integer.class, idAvaliacao, idDocente);
+        return total != null && total > 0;
+    }
+
     /**
      * Avaliações das ofertas em que o aluno está matriculado, com o indicador {@code respondida}
      * (consulta apenas {@code participacao_avaliacao} — nunca as respostas).

@@ -33,8 +33,8 @@ public class AvaliacaoController {
     }
 
     @GetMapping
-    public List<Avaliacao> listar() {
-        return avaliacaoService.listarAvaliacoes();
+    public List<Avaliacao> listar(@RequestAttribute(AuthInterceptor.ATRIBUTO_USUARIO) Usuario usuario) {
+        return avaliacaoService.listarAvaliacoes(usuario);
     }
 
     /** Avaliações do aluno logado, com indicador {@code respondida}. */

@@ -38,12 +38,17 @@ public class CatalogoService {
         return usuarioDAO.listarPorPerfil(p);
     }
 
-    public List<Disciplina> listarDisciplinas() {
-        return disciplinaDAO.listarDisciplinas();
+    /** O DOCENTE só enxerga as disciplinas e ofertas que ministra; o ADMIN enxerga todas. */
+    public List<Disciplina> listarDisciplinas(Usuario usuario) {
+        return usuario.isDocente()
+                ? disciplinaDAO.listarDisciplinasDoDocente(usuario.idUsuario())
+                : disciplinaDAO.listarDisciplinas();
     }
 
-    public List<OfertaDisciplina> listarOfertas() {
-        return disciplinaDAO.listarOfertas();
+    public List<OfertaDisciplina> listarOfertas(Usuario usuario) {
+        return usuario.isDocente()
+                ? disciplinaDAO.listarOfertasDoDocente(usuario.idUsuario())
+                : disciplinaDAO.listarOfertas();
     }
 
     public List<Usuario> listarAlunosDaOferta(Long idOferta) {
