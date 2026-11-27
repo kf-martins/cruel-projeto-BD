@@ -18,6 +18,10 @@
 -- =============================================================================
 
 
+-- Os scripts são UTF-8: força a codificação do cliente para não corromper acentos
+-- no Windows (onde o psql usa a página de código do console, ex.: WIN1252).
+SET client_encoding = 'UTF8';
+
 -- =============================================================================
 -- RELATÓRIO 1 — Média geral e distribuição das notas por disciplina/docente
 -- Objetivo : média de satisfação (questões de escala 1–5), total de submissões

@@ -17,6 +17,10 @@
 --                                participações com a ordem das submissões.
 -- =============================================================================
 
+-- Os scripts são UTF-8: força a codificação do cliente para não corromper acentos
+-- no Windows (onde o psql usa a página de código do console, ex.: WIN1252).
+SET client_encoding = 'UTF8';
+
 DROP TABLE IF EXISTS resposta_questao       CASCADE;
 DROP TABLE IF EXISTS submissao_anonima      CASCADE;
 DROP TABLE IF EXISTS participacao_avaliacao CASCADE;

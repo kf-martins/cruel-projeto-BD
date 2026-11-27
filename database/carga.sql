@@ -16,6 +16,10 @@
 -- reajustadas com setval() para que novos cadastros via aplicação não colidam.
 -- =============================================================================
 
+-- Os scripts são UTF-8: força a codificação do cliente para não corromper acentos
+-- no Windows (onde o psql usa a página de código do console, ex.: WIN1252).
+SET client_encoding = 'UTF8';
+
 BEGIN;
 
 -- -----------------------------------------------------------------------------
@@ -209,7 +213,8 @@ WHERE (a.id_avaliacao, u.matricula) NOT IN (
 -- SUBMISSÕES ANÔNIMAS + RESPOSTAS
 -- Para cada avaliação, cria tantas submissões quantas participações existirem,
 -- SEM qualquer referência ao usuário. As notas seguem um "perfil de qualidade"
--- por oferta (BD I melhora de 2026/1 para 2026/2; infraestrutura é pior avaliada),
+-- por oferta (BD I, do Prof. Anderson, tem as melhores notas e ainda melhora de
+-- 2026/1 para 2026/2; infraestrutura é pior avaliada),
 -- com ruído pseudoaleatório determinístico (setseed).
 -- -----------------------------------------------------------------------------
 DO $$
@@ -261,9 +266,10 @@ BEGIN
         JOIN disciplina d        ON d.id_disciplina = o.id_disciplina
         ORDER BY a.id_avaliacao
     LOOP
+        -- BD I (Prof. Anderson Santos) é a oferta mais bem avaliada do curso nos dois semestres.
         v_base := CASE
-            WHEN r_av.codigo = '2COP001' AND r_av.semestre = 2 THEN 4.3
-            WHEN r_av.codigo = '2COP001'                       THEN 3.4
+            WHEN r_av.codigo = '2COP001' AND r_av.semestre = 2 THEN 4.8
+            WHEN r_av.codigo = '2COP001'                       THEN 4.2
             WHEN r_av.codigo = '2COP002'                       THEN 3.9
             WHEN r_av.codigo = '2COP003'                       THEN 3.1
             ELSE 3.6
