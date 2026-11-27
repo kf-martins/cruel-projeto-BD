@@ -1,13 +1,10 @@
 # DER — Diagrama Entidade-Relacionamento
 
-Diagrama do banco de dados do **crUEL** (Avaliação Anônima de Disciplinas e Docentes), fiel ao
-`database/schema.sql`. A imagem exportada está em [`DER.png`](DER.png).
+Diagrama do banco de dados do **crUEL** (Avaliação Anônima de Disciplinas e Docentes). A imagem exportada está em [`DER.png`](DER.png).
 
 ![DER do crUEL](DER.png)
 
 ## Diagrama (Mermaid)
-
-O GitHub renderiza o bloco abaixo automaticamente.
 
 ```mermaid
 erDiagram
@@ -124,9 +121,3 @@ as duas "ilhas" só se tocam pela `AVALIACAO`. Assim é possível saber *que* um
 bloquear uma segunda resposta), mas é impossível saber *o que* ele respondeu. Para evitar correlação
 pela ordem de gravação, a submissão usa chave **UUID aleatória** e as duas tabelas guardam apenas a
 **data** (sem hora).
-
-## Como regenerar o `DER.png`
-
-1. Abra o [Mermaid Live Editor](https://mermaid.live), cole o bloco `erDiagram` acima e use **Actions → PNG**; ou
-2. Com Node.js instalado (o código-fonte do diagrama também está em [`DER.mmd`](DER.mmd)):
-   `npx -p @mermaid-js/mermaid-cli mmdc -i docs/DER.mmd -o docs/DER.png -b white -w 2400`
