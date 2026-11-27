@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="pt-BR" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="crUEL — Avaliação anônima de disciplinas e docentes da UEL" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23B07D56'/><text x='16' y='22' font-size='16' text-anchor='middle' fill='%2316100C' font-family='Georgia' font-weight='700'>cr</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <title>crUEL — Avaliação de Disciplinas</title>
+    <script>
+      // Aplica o tema salvo antes da renderização (evita "piscar" claro/escuro).
+      try {
+        if (localStorage.getItem('cruel-tema') === 'light') document.documentElement.classList.remove('dark');
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

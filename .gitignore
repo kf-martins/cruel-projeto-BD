@@ -1,0 +1,20 @@
+# Variáveis de ambiente (segredos locais)
+.env
+frontend/.env
+
+# Outros
+*.pdf
+
+# Build / dependências
+target/
+node_modules/
+dist/
+
+# IDEs / SO
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+tmp

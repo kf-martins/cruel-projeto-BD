@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =============================================================================
+   Tokens de tema — Light "Latte / Cream" (:root) e Dark "Espresso / Umber" (.dark).
+   O tema escuro é o padrão (classe .dark no <html>, alternada pelo ThemeContext).
+   As cores de gráficos (--chart-*) foram validadas para daltonismo (ΔE CVD ≥ 8)
+   e contraste ≥ 3:1 contra o fundo dos cards em cada modo.
+   ============================================================================= */
+:root {
+  color-scheme: light;
+  /* Light Mode: Warm Latte & Roasted Almond */
+  --bg-primary: #FAF6F2;
+  --bg-secondary: #F1E8DF;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #FBF7F3;
+  --text-primary: #2C1E16;
+  --text-secondary: #6B5344;
+  --text-muted: #8C7666;
+  --text-on-accent: #FFFFFF;
+  --accent-primary: #6F4E37;
+  --accent-hover: #583D2A;
+  --accent-soft: #EADBCD;
+  --border-subtle: #DFD1C5;
+
+  /* Status (sempre acompanhados de ícone + texto) */
+  --status-good: #2E7D32;
+  --status-good-soft: #E3F0E1;
+  --status-warning: #A15C00;
+  --status-warning-soft: #F8EBD5;
+  --status-critical: #B3261E;
+  --status-critical-soft: #F7E0DD;
+
+  /* Séries categóricas — ordem fixa: cobre, azul, oliva, framboesa */
+  --chart-1: #A8642A;
+  --chart-2: #2F6FC4;
+  --chart-3: #7A8C1E;
+  --chart-4: #C2477A;
+  --chart-grid: #EDE3DA;
+  --chart-axis: #8C7666;
+}
+
+.dark {
+  color-scheme: dark;
+  /* Dark Mode (Padrão): Deep Espresso & Dark Umber */
+  --bg-primary: #16100C;
+  --bg-secondary: #211812;
+  --bg-card: #2B1F18;
+  --bg-card-hover: #33251D;
+  --text-primary: #F5ECE6;
+  --text-secondary: #C4B0A2;
+  --text-muted: #9A8576;
+  --text-on-accent: #16100C;
+  --accent-primary: #B07D56;
+  --accent-hover: #C8936B;
+  --accent-soft: #3D2C21;
+  --border-subtle: #423126;
+
+  --status-good: #7BC67E;
+  --status-good-soft: #22301F;
+  --status-warning: #E5A84B;
+  --status-warning-soft: #3A2B17;
+  --status-critical: #F08A80;
+  --status-critical-soft: #3D1F1B;
+
+  --chart-1: #BD763D;
+  --chart-2: #4A82D1;
+  --chart-3: #869A27;
+  --chart-4: #C95C88;
+  --chart-grid: #3A2B21;
+  --chart-axis: #9A8576;
+}
+
+html,
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+body {
+  @apply font-sans antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+* {
+  border-color: var(--border-subtle);
+}
+
+/* Transição suave ao alternar o tema */
+.theme-transition,
+.theme-transition * {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease !important;
+}
+
+@layer components {
+  .card {
+    @apply bg-card border border-line rounded-2xl shadow-card;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold
+      transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent
+      disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply btn bg-accent text-on-accent hover:bg-accent-hover;
+  }
+  .btn-ghost {
+    @apply btn text-ink-soft hover:bg-secondary hover:text-ink;
+  }
+  .btn-outline {
+    @apply btn border border-line text-ink hover:bg-secondary;
+  }
+  .input {
+    @apply w-full rounded-xl border border-line bg-primary px-3 py-2 text-sm text-ink placeholder:text-ink-muted
+      focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent;
+  }
+  .label {
+    @apply mb-1 block text-xs font-semibold uppercase tracking-wide text-ink-soft;
+  }
+  .table-base {
+    @apply w-full text-left text-sm;
+  }
+  .table-base th {
+    @apply border-b border-line px-3 py-2 text-xs font-semibold uppercase tracking-wide text-ink-muted;
+  }
+  .table-base td {
+    @apply border-b border-line px-3 py-2 align-top text-ink;
+  }
+  .table-base tbody tr:hover {
+    @apply bg-card-hover;
+  }
+}
