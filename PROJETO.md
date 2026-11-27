@@ -50,7 +50,6 @@ Como isso é garantido:
 │   └── prints/                              # capturas de tela do sistema
 ├── backend/              # API REST Spring Boot (controller → service → dao → PostgreSQL)
 ├── frontend/             # SPA React (Vite)
-├── docker-compose.yml    # PostgreSQL 16 (opcional)
 └── .env.example          # variáveis de ambiente
 ```
 
@@ -68,9 +67,52 @@ Arquitetura em camadas do back-end (`backend/src/main/java/br/uel/avaliacao`):
 
 ### Pré-requisitos
 
-* PostgreSQL 16+ **ou** Docker
+* PostgreSQL 16+
 * Java 21+ (o Maven Wrapper `mvnw` já vem no projeto — não é preciso instalar o Maven)
 * Node.js 20+
+
+### Windows: acentos aparecendo desformatados
+
+No Windows, o console usa por padrão a página de código 850/1252, e o `psql` herda essa codificação.
+Os scripts `.sql` estão em UTF-8, então os acentos aparecem errados no terminal (ex.: `AvaliaÃ§Ã£o`) e
+podem até ser **gravados corrompidos** no banco. Execute os comandos abaixo **no mesmo terminal**,
+antes de rodar o `psql`, o back-end ou o front-end:
+
+**PowerShell**
+
+```powershell
+chcp 65001
+[Console]::InputEncoding  = [System.Text.Encoding]::UTF8
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$env:PGCLIENTENCODING = "UTF8"
+$env:JAVA_TOOL_OPTIONS = "-Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8"
+```
+
+**Prompt de Comando (cmd)**
+
+```bat
+chcp 65001
+set PGCLIENTENCODING=UTF8
+set JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8
+```
+
+**Git Bash**
+
+```bash
+export PGCLIENTENCODING=UTF8
+export JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8"
+```
+
+* `chcp 65001` muda o console para UTF-8; `PGCLIENTENCODING` faz o `psql` enviar e exibir os dados em UTF-8;
+  `JAVA_TOOL_OPTIONS` corrige os logs do Spring Boot no console.
+* Os três scripts (`schema.sql`, `carga.sql`, `relatorios.sql`) também começam com `SET client_encoding = 'UTF8';`,
+  então os dados são gravados corretamente mesmo que a variável não esteja definida.
+* Confira se o banco foi criado em UTF-8: `psql -U postgres -c "\l avaliacao_docente_db"` (coluna *Encoding* = `UTF8`).
+  Se não estiver, recrie-o com `CREATE DATABASE avaliacao_docente_db ENCODING 'UTF8' TEMPLATE template0;`.
+* Se os dados já foram gravados com acentos quebrados, basta executar `schema.sql` e `carga.sql` novamente.
+* Para deixar permanente no PowerShell, adicione as linhas acima ao seu perfil (`notepad $PROFILE`).
+  No Windows 11 também é possível marcar *Configurações → Hora e idioma → Idioma e região → Configurações de
+  idioma administrativas → Alterar localidade do sistema → "Beta: usar Unicode UTF-8"* (exige reiniciar).
 
 ### 1. Variáveis de ambiente
 
@@ -89,23 +131,14 @@ cp frontend/.env.example frontend/.env  # URL da API usada pelo front-end
 
 ### 2. Banco de dados
 
-**Opção A — Docker** (cria o banco e já executa `schema.sql` + `carga.sql` na primeira subida):
-
 ```bash
-docker compose up -d
-```
-
-**Opção B — PostgreSQL local:**
-
-```bash
-psql -U postgres -c "CREATE DATABASE avaliacao_docente_db;"
+psql -U postgres -c "CREATE DATABASE avaliacao_docente_db ENCODING 'UTF8' TEMPLATE template0;"
 psql -U postgres -d avaliacao_docente_db -v ON_ERROR_STOP=1 -f database/schema.sql
 psql -U postgres -d avaliacao_docente_db -v ON_ERROR_STOP=1 -f database/carga.sql
 psql -U postgres -d avaliacao_docente_db -v ON_ERROR_STOP=1 -f database/relatorios.sql   # (opcional) ver os relatórios
 ```
 
 > Os scripts são idempotentes: para "zerar" o banco, basta executar `schema.sql` e `carga.sql` novamente.
-> Com Docker: `docker compose down -v && docker compose up -d`.
 
 ### 3. Back-end (porta 8080)
 
@@ -130,7 +163,7 @@ Acesse **http://localhost:5173**.
 | Perfil | Login | O que pode fazer |
 |---|---|---|
 | Administrador | `coordenacao.dc@uel.br` ou `admin01` | Questões, avaliações, turmas e relatórios |
-| Docente | `anderson.santos@uel.br` ou `doc01` | Consultar questões, avaliações e relatórios |
+| Docente | `anderson.santos@uel.br` ou `doc01` | Consultar questões, avaliações e relatórios **apenas das próprias ofertas**; vê só o **total** de alunos pendentes, nunca os nomes |
 | Aluno | `ana.silva@uel.br` ou `aluno01` | Responder avaliações (Ana tem BD I e Redes pendentes) |
 
 Os demais alunos vão de `aluno02` a `aluno21` (ex.: `bruno.costa@uel.br`). A tela de login tem botões de acesso rápido.
@@ -155,6 +188,8 @@ Os demais alunos vão de `aluno02` a `aluno21` (ex.: `bruno.costa@uel.br`). A te
 
 Os relatórios são exibidos em **Relatórios** com gráfico + tabela e aceitam filtros por ano, semestre e disciplina
 (no `RelatorioDAO` os valores fixos do script viram parâmetros: `(CAST(:ano AS INTEGER) IS NULL OR o.ano = :ano)`).
+Quando o usuário logado é **DOCENTE**, o back-end acrescenta `o.id_docente = :idDocente` a todas as consultas,
+de modo que ele só enxerga os resultados das ofertas que ministra.
 
 | Recurso SQL exigido | Relatórios |
 |---|---|
@@ -169,7 +204,7 @@ Extras: `HAVING` (2), `CASE WHEN` (1, 3, 4), CTE `WITH` (3), `NULLIF` (4).
 
 ### Relatório 1 — Média geral e distribuição por disciplina/docente
 
-* **Objetivo:** média de satisfação (questões de escala 1–5), total de submissões anônimas e distribuição das notas por oferta; com o filtro de período removido, mostra a **evolução entre semestres** (BD I: 3,35 em 2026/1 → 4,23 em 2026/2).
+* **Objetivo:** média de satisfação (questões de escala 1–5), total de submissões anônimas e distribuição das notas por oferta; com o filtro de período removido, mostra a **evolução entre semestres** (BD I, do Prof. Anderson: 4,05 em 2026/1 → 4,57 em 2026/2, a maior média do curso).
 * **Recursos:** `JOIN` (5 tabelas), `GROUP BY`, `AVG`, `COUNT`, `SUM(CASE WHEN …)`, `WHERE` por ano/semestre.
 * **Gráficos:** barras (média por oferta) e linha (evolução por semestre).
 
@@ -245,6 +280,7 @@ FROM indice ORDER BY posicao FETCH FIRST 10 ROWS ONLY;
 ### Relatório 4 — Taxa de adesão e alunos pendentes
 
 * **Objetivo:** para cada avaliação, quantos matriculados já responderam, a taxa de adesão e **quem ainda está pendente** — usando apenas `participacao_avaliacao`, ou seja, sem tocar nas respostas (o anonimato é preservado). Inclui também as questões do banco que não são usadas em nenhuma avaliação.
+* **Visibilidade:** a lista nominal de pendentes (4b) e as questões não utilizadas (4c) são exclusivas do **ADMIN**. O docente vê apenas os **totais** (matriculados, respondentes, pendentes) das próprias avaliações — em turmas pequenas, saber *quem* falta ajudaria a deduzir quem respondeu o quê.
 * **Recursos:** `LEFT JOIN` (matrículas × participações), anti-join `LEFT JOIN … WHERE p.id_usuario IS NULL`, `COUNT`, `CASE WHEN` (situação e nível de adesão), `NULLIF`, `WHERE`.
 * **Gráfico:** barras empilhadas (respondentes × pendentes) + tabelas.
 
